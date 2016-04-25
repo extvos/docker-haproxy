@@ -19,7 +19,7 @@ initialize() {
 
 # Start tasks
 main_task() {
-	/etc/init.d/rsyslog start
+    /etc/init.d/rsyslog start
     /etc/init.d/crond start
 }
 
