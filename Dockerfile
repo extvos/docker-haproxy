@@ -6,7 +6,7 @@ VOLUME /etc/haproxy
 VOLUME /var/log
 
 COPY docker-entrypoint.sh /
-COPY packages/* /tmp
+COPY packages/* /tmp/
 
 RUN apk update && apk add --allow-untrusted /tmp/haproxy-* && apk add rsyslog && rm -f /tmp/haproxy-*
 
