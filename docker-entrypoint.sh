@@ -15,7 +15,6 @@ show_help() {
 # Initialize
 initialize() {
     echo "Initializing ..."
-    rm -f /var/run/haproxy.pid
 }
 
 # Start tasks
