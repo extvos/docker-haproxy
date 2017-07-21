@@ -1,22 +1,46 @@
-FROM extvos/centos
+FROM extvos/alpine
 MAINTAINER  "Mingcai SHEN <archsh@gmail.com>"
-ENV HAPROXY_VERSION 1.5.14.Rev1
+ENV HAPROXY_MAJOR 1.6
+ENV HAPROXY_VERSION 1.6.9.rev2
+ENV HAPROXY_MD5 21d35f114583ef731bc96af05b46c75a
 
-VOLUME /etc/haproxy 
-VOLUME /var/log
+# see http://sources.debian.net/src/haproxy/1.5.8-1/debian/rules/ for some helpful navigation of the possible "make" arguments
+RUN set -x \
+	&& apk add --no-cache --virtual .build-deps \
+		curl \
+		gcc \
+		libc-dev \
+		linux-headers \
+		make \
+		openssl-dev \
+		pcre-dev \
+		zlib-dev \
+	&& curl -SL "https://github.com/archsh/haproxy/archive/${HAPROXY_VERSION}.tar.gz" -o haproxy.tar.gz \
+	&& echo "${HAPROXY_MD5}  haproxy.tar.gz" | md5sum -c \
+	&& mkdir -p /usr/src \
+	&& tar -xzf haproxy.tar.gz -C /usr/src \
+	&& mv "/usr/src/haproxy-$HAPROXY_VERSION" /usr/src/haproxy \
+	&& rm haproxy.tar.gz \
+	&& make -C /usr/src/haproxy \
+		TARGET=linux2628 \
+		USE_PCRE=1 PCREDIR= \
+		USE_OPENSSL=1 \
+		USE_ZLIB=1 \
+		all \
+		install-bin \
+	&& mkdir -p /etc/haproxy \
+	&& cp -R /usr/src/haproxy/examples/errorfiles /etc/haproxy/errors \
+	&& rm -rf /usr/src/haproxy \
+	&& runDeps="$( \
+		scanelf --needed --nobanner --recursive /usr/local \
+			| awk '{ gsub(/,/, "\nso:", $2); print "so:" $2 }' \
+			| sort -u \
+			| xargs -r apk info --installed \
+			| sort -u \
+	)" \
+	&& apk add --virtual .haproxy-rundeps $runDeps \
+	&& apk del .build-deps
 
 COPY docker-entrypoint.sh /
-
-RUN yum install -y /sbin/service  \
-    && rpm -Uvh https://github.com/extvos/rpmbuild/raw/master/RPMS/x86_64/haproxy-1.5.14.Rev1-1.el6.x86_64.rpm \
-    && yum install -y rsyslog logrotate crontabs \
-    && sed -i 's/#$ModLoad imudp/$ModLoad imudp/g' /etc/rsyslog.conf \
-    && sed -i 's/#$UDPServerRun 514/$UDPServerRun 514/g' /etc/rsyslog.conf \
-    && chmod +x /docker-entrypoint.sh \
-    && mkdir -p /var/run/haproxy/ && mkdir -p /usr/local/share/haproxy 
-
-COPY syslog.logrotate.conf /etc/logrotate.d/syslog
-
 ENTRYPOINT ["/docker-entrypoint.sh"]
-
 CMD ["haproxy", "-f", "/etc/haproxy/haproxy.cfg"]
