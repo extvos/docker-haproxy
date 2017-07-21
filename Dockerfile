@@ -8,8 +8,8 @@ VOLUME /var/log
 COPY docker-entrypoint.sh /
 COPY packages/* /tmp/
 
-RUN apk update && apk add --allow-untrusted /tmp/haproxy-* 、
-    && apk add rsyslog && rm -f /tmp/haproxy-* 、
+RUN apk update && apk add --allow-untrusted /tmp/haproxy-* \
+    && apk add rsyslog && rm -f /tmp/haproxy-* \
     && chmod +x /docker-entrypoint.sh
 
 #ENTRYPOINT ["/docker-entrypoint.sh"]
