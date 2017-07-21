@@ -1,22 +1,17 @@
-FROM extvos/centos
+FROM extvos/alpine
 MAINTAINER  "Mingcai SHEN <archsh@gmail.com>"
-ENV HAPROXY_VERSION 1.5.14.Rev1
+ENV HAPROXY_VERSION 1.6.9.Rev2
 
 VOLUME /etc/haproxy 
 VOLUME /var/log
 
 COPY docker-entrypoint.sh /
+COPY packages/* /tmp/
 
-RUN yum install -y /sbin/service  \
-    && rpm -Uvh https://github.com/extvos/rpmbuild/raw/master/RPMS/x86_64/haproxy-1.5.14.Rev1-1.el6.x86_64.rpm \
-    && yum install -y rsyslog logrotate crontabs \
-    && sed -i 's/#$ModLoad imudp/$ModLoad imudp/g' /etc/rsyslog.conf \
-    && sed -i 's/#$UDPServerRun 514/$UDPServerRun 514/g' /etc/rsyslog.conf \
-    && chmod +x /docker-entrypoint.sh \
-    && mkdir -p /var/run/haproxy/ && mkdir -p /usr/local/share/haproxy 
+RUN apk update && apk add --allow-untrusted /tmp/haproxy-* 、
+    && apk add rsyslog && rm -f /tmp/haproxy-* 、
+    && chmod +x /docker-entrypoint.sh
 
-COPY syslog.logrotate.conf /etc/logrotate.d/syslog
-
-ENTRYPOINT ["/docker-entrypoint.sh"]
+#ENTRYPOINT ["/docker-entrypoint.sh"]
 
 CMD ["haproxy", "-f", "/etc/haproxy/haproxy.cfg"]
