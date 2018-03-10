@@ -17,11 +17,6 @@ initialize() {
     echo "Initializing ..."
 }
 
-# Start tasks
-main_task() {
-    /etc/init.d/rsyslog start
-}
-
 # Run
 case "$1" in
     bash)
@@ -32,7 +27,6 @@ case "$1" in
     ;;
     *)
         initialize
-        main_task
         exec "$@"
     ;;
 esac
