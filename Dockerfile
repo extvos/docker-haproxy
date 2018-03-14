@@ -14,4 +14,4 @@ RUN apk update && apk add --allow-untrusted /tmp/haproxy-* \
 
 ENTRYPOINT ["/docker-entrypoint.sh"]
 
-CMD ["haproxy", "-d", -f", "/etc/haproxy/haproxy.cfg"]
+CMD ["haproxy", "-d", "-f", "/etc/haproxy/haproxy.cfg"]
