@@ -1,4 +1,4 @@
-FROM extvos/alpine
+FROM extvos/alpine:3.6
 MAINTAINER  "Mingcai SHEN <archsh@gmail.com>"
 ENV HAPROXY_VERSION 1.6.9.Rev2
 
